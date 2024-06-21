@@ -19,6 +19,8 @@ import {
 import CardWrapper from "./CardWrapper"
 import { Input } from "../ui/input"
 import { Button } from "../ui/button"
+import FormError from "../FormError"
+import FormSuccess from "../FormSuccess"
 
 const LoginForm = () => {
   const form = useForm<z.infer<typeof LoginSchema>>({
@@ -80,6 +82,8 @@ const LoginForm = () => {
               )}
             />
           </div>
+          <FormError message="Something went wrong!" />
+          <FormSuccess message="Mega sburra" />
           <Button
             type="submit"
             className="w-full"
