@@ -3,8 +3,8 @@
  * These routes do not require authentication
  * @type {string[]}
  */
-export const publicRoutes = [
-  "/",
+export const publicRoutes: string[] = [
+  "/"
 ]
 
 /**
@@ -12,7 +12,7 @@ export const publicRoutes = [
  * These routes will redirect logged users to /settings
  * @type {string[]}
  */
-export const authRoutes = [
+export const authRoutes: string[] = [
   "/auth/login",
   "/auth/register"
 ]
@@ -22,10 +22,10 @@ export const authRoutes = [
  * Routes that start with this prefix are used for API authentication purposes
  * @type {string}
  */
-export const apiAuthPrefix = "/api/auth"
+export const apiAuthPrefix: string = "/api/auth"
 
 /**
  * Default redirect path after login
  * @type {string}
  */
-export const DEFAULT_LOGIN_REDIRECT = "/settings"
+export const DEFAULT_LOGIN_REDIRECT: string = "/settings"
