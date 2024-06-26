@@ -23,7 +23,7 @@ declare module "next-auth/jwt" {
 export const { auth, handlers, signIn, signOut } = NextAuth({
   pages: {
     signIn: "/auth/login",
-    error: "/auth/error"
+    error: "/auth/error",
   },
   events: {
     async linkAccount({ user }) {
@@ -34,6 +34,18 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     },
   },
   callbacks: {
+    async signIn({ user, account }) {
+      // Allow OAuth without email verification
+      if (account?.provider !== "credentials") return true
+
+      const existingUser = await getUserById(user.id!)
+
+      // Prevent signin without email verification
+      if (!existingUser?.emailVerified) return false
+
+      return true
+    },
+
     async session({ token, session }) {
       if (token.sub && session.user) {
         session.user.id = token.sub
