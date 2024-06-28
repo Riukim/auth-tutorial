@@ -7,11 +7,13 @@ import { getUserById } from "./data/user"
 import { db } from "./lib/db"
 import { getTwoFactorConfirmationByUserId } from "./data/twoFactorConfirmation"
 
+export type ExtendedUser = DefaultSession["user"] & {
+  role: "ADMIN" | "USER"
+}
+
 declare module "next-auth" {
   interface Session {
-    user: {
-      role: "ADMIN" | "USER"
-    } & DefaultSession
+    user: ExtendedUser
   }
 }
 
