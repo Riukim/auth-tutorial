@@ -6,8 +6,9 @@ import authConfig from "./auth.config"
 import { getUserById } from "./data/user"
 import { db } from "./lib/db"
 import { getTwoFactorConfirmationByUserId } from "./data/twoFactorConfirmation"
+import { UserRole } from "@prisma/client"
 
-export type ExtendedUser = DefaultSession["user"] & {
+/* export type ExtendedUser = DefaultSession["user"] & {
   role: "ADMIN" | "USER"
 }
 
@@ -21,7 +22,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     role?: "ADMIN" | "USER"
   }
-}
+} */
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
   pages: {
@@ -67,7 +68,11 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       }
 
       if (token.role && session.user) {
-        session.user.role = token.role
+        session.user.role = token.role as UserRole
+      }
+
+      if (session.user) {
+        session.user.isTwoFactorEnabled = token.isTwoFactorEnabled as boolean
       }
 
       return session
@@ -80,6 +85,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       if (!existingUser) return token
 
       token.role = existingUser.role
+      token.isTwoFactorEnabled = existingUser.isTwoFactorEnabled
 
       return token
     },
