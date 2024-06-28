@@ -1,4 +1,4 @@
-import NextAuth, { type DefaultSession } from "next-auth"
+import NextAuth from "next-auth"
 
 import { JWT } from "next-auth/jwt"
 import { PrismaAdapter } from "@auth/prisma-adapter"
@@ -7,6 +7,7 @@ import { getUserById } from "./data/user"
 import { db } from "./lib/db"
 import { getTwoFactorConfirmationByUserId } from "./data/twoFactorConfirmation"
 import { UserRole } from "@prisma/client"
+import { getAccountByUserId } from "./data/account"
 
 /* export type ExtendedUser = DefaultSession["user"] & {
   role: "ADMIN" | "USER"
@@ -24,7 +25,13 @@ declare module "next-auth/jwt" {
   }
 } */
 
-export const { auth, handlers, signIn, signOut } = NextAuth({
+export const {
+  auth,
+  handlers: { GET, POST },
+  signIn,
+  signOut,
+  unstable_update
+} = NextAuth({
   pages: {
     signIn: "/auth/login",
     error: "/auth/error",
@@ -48,14 +55,16 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
       if (!existingUser?.emailVerified) return false
 
       if (existingUser.isTwoFactorEnabled) {
-        const twoFactorConfirmation = await getTwoFactorConfirmationByUserId(existingUser.id)
-        
+        const twoFactorConfirmation = await getTwoFactorConfirmationByUserId(
+          existingUser.id
+        )
+
         if (!twoFactorConfirmation) {
           return false
         }
 
         await db.twoFactorConfirmation.delete({
-          where: {id: twoFactorConfirmation.id}
+          where: { id: twoFactorConfirmation.id },
         })
       }
 
@@ -73,6 +82,9 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 
       if (session.user) {
         session.user.isTwoFactorEnabled = token.isTwoFactorEnabled as boolean
+        session.user.name = token.name
+        session.user.email = token.email!
+        session.user.isOAuth = token.isOauth as boolean
       }
 
       return session
@@ -84,6 +96,11 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
 
       if (!existingUser) return token
 
+      const existingAccount = await getAccountByUserId(existingUser.id)
+
+      token.isOauth = !!existingAccount
+      token.name = existingUser.name
+      token.email = existingUser.email
       token.role = existingUser.role
       token.isTwoFactorEnabled = existingUser.isTwoFactorEnabled
 
